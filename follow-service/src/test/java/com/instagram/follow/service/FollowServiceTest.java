@@ -7,6 +7,7 @@ import com.instagram.follow.entity.Follow;
 import com.instagram.follow.exception.AlreadyFollowingException;
 import com.instagram.follow.exception.NotFollowingException;
 import com.instagram.follow.exception.SelfFollowException;
+import com.instagram.follow.client.AuthServiceClient;
 import com.instagram.follow.repository.FollowRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +28,9 @@ class FollowServiceTest {
 
     @Mock
     private FollowRepository followRepository;
+
+    @Mock
+    private AuthServiceClient authServiceClient;
 
     @InjectMocks
     private FollowService followService;
@@ -114,6 +118,10 @@ class FollowServiceTest {
                 Follow.builder().id("f2").followerId("user-B").followingId(FOLLOWING_ID).build()
         );
         when(followRepository.findByFollowingId(FOLLOWING_ID)).thenReturn(followers);
+        when(authServiceClient.getUserSummary("user-A")).thenReturn(
+                UserSummaryDTO.builder().id("user-A").username("userA").build());
+        when(authServiceClient.getUserSummary("user-B")).thenReturn(
+                UserSummaryDTO.builder().id("user-B").username("userB").build());
 
         List<UserSummaryDTO> result = followService.getFollowers(FOLLOWING_ID);
 
@@ -133,6 +141,10 @@ class FollowServiceTest {
                 Follow.builder().id("f2").followerId(FOLLOWER_ID).followingId("user-Y").build()
         );
         when(followRepository.findByFollowerId(FOLLOWER_ID)).thenReturn(following);
+        when(authServiceClient.getUserSummary("user-X")).thenReturn(
+                UserSummaryDTO.builder().id("user-X").username("userX").build());
+        when(authServiceClient.getUserSummary("user-Y")).thenReturn(
+                UserSummaryDTO.builder().id("user-Y").username("userY").build());
 
         List<UserSummaryDTO> result = followService.getFollowing(FOLLOWER_ID);
 

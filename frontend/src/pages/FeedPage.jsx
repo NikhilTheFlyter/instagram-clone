@@ -39,7 +39,7 @@ export default function FeedPage() {
 
   if (isLoading) {
     return (
-      <div data-cy="feed-loading" className="py-8 space-y-4 max-w-[470px] mx-auto">
+      <div data-cy="feed-loading" className="py-8 space-y-4 w-full sm:max-w-[470px] mx-auto px-0 sm:px-4">
         {[1, 2, 3].map((i) => (
           <div key={i} className="bg-white border border-gray-300 rounded-lg animate-pulse">
             <div className="flex items-center gap-2 p-3">
@@ -67,14 +67,14 @@ export default function FeedPage() {
 
   if (!Array.isArray(posts) || posts.length === 0) {
     return (
-      <div data-cy="feed-empty-state" className="py-16 text-center max-w-[470px] mx-auto">
+      <div data-cy="feed-empty-state" className="py-16 text-center w-full sm:max-w-[470px] mx-auto px-0 sm:px-4">
         <p className="text-gray-500 text-lg">Follow some users to see their posts here</p>
       </div>
     );
   }
 
   return (
-    <div className="py-8 max-w-[470px] mx-auto">
+    <div className="py-8 w-full sm:max-w-[470px] mx-auto px-0 sm:px-4">
       {posts.map((post) => (
         <PostCard
           key={post.id}

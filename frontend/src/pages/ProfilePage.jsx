@@ -112,7 +112,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Stats */}
-          <div className="flex gap-8 mb-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-8 mb-4">
             <div>
               <span data-cy="profile-post-count" className="font-semibold">
                 {Array.isArray(posts) ? posts.length : 0}
@@ -157,7 +157,7 @@ export default function ProfilePage() {
         </div>
 
         {postsLoading ? (
-          <div className="grid grid-cols-3 gap-1">
+          <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="aspect-square bg-gray-200 animate-pulse" />
             ))}
@@ -168,7 +168,7 @@ export default function ProfilePage() {
             <p className="text-lg font-light">No Posts Yet</p>
           </div>
         ) : (
-          <div data-cy="profile-posts-grid" className="grid grid-cols-3 gap-1">
+          <div data-cy="profile-posts-grid" className="grid grid-cols-3 gap-0.5 sm:gap-1">
             {posts.map((post) => (
               <Link
                 key={post.id}

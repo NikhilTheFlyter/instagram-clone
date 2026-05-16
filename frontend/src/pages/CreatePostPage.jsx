@@ -48,7 +48,7 @@ export default function CreatePostPage() {
   };
 
   return (
-    <div className="py-8 max-w-[470px] mx-auto">
+    <div className="py-8 w-full sm:max-w-[470px] mx-auto">
       <h1 className="text-xl font-semibold mb-6">Create Post</h1>
 
       <form onSubmit={handleSubmit} className="space-y-5">

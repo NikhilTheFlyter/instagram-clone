@@ -1,6 +1,7 @@
 package com.instagram.post.service;
 
 import com.instagram.post.client.FollowServiceClient;
+import com.instagram.post.client.TrendingServiceClient;
 import com.instagram.post.dto.CreatePostRequestDTO;
 import com.instagram.post.dto.LikeResponseDTO;
 import com.instagram.post.dto.PostResponseDTO;
@@ -34,6 +35,7 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final ModelMapper modelMapper;
     private final FollowServiceClient followServiceClient;
+    private final TrendingServiceClient trendingServiceClient;
 
     public PostResponseDTO createPost(String userId, CreatePostRequestDTO dto) {
         Post post = Post.builder()
@@ -49,6 +51,10 @@ public class PostService {
 
         Post savedPost = postRepository.save(post);
         log.info("Post created with id: {} by user: {}", savedPost.getId(), userId);
+
+        trendingServiceClient.pushToTrending(
+                savedPost.getId(), savedPost.getUserId(), savedPost.getCaption(),
+                savedPost.getMediaUrls(), savedPost.getHashtags(), savedPost.getLikesCount());
 
         return mapToPostResponseDTO(savedPost, false);
     }
@@ -82,6 +88,8 @@ public class PostService {
         likeRepository.deleteByPostId(postId);
         postRepository.delete(post);
         log.info("Post deleted with id: {} by user: {}", postId, userId);
+
+        trendingServiceClient.removeFromTrending(postId);
     }
 
     public LikeResponseDTO likePost(String userId, String postId) {
@@ -102,6 +110,10 @@ public class PostService {
         postRepository.save(post);
 
         log.info("Post {} liked by user {}", postId, userId);
+
+        trendingServiceClient.pushToTrending(
+                post.getId(), post.getUserId(), post.getCaption(),
+                post.getMediaUrls(), post.getHashtags(), post.getLikesCount());
 
         return LikeResponseDTO.builder()
                 .postId(postId)

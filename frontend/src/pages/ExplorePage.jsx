@@ -79,7 +79,7 @@ export default function ExplorePage() {
 
       {/* Posts grid */}
       {postsLoading ? (
-        <div className="grid grid-cols-3 gap-1">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
           {Array.from({ length: 9 }).map((_, i) => (
             <div key={i} className="aspect-square bg-gray-200 animate-pulse" />
           ))}
@@ -89,7 +89,7 @@ export default function ExplorePage() {
           <p className="text-lg font-light">No posts to explore yet</p>
         </div>
       ) : (
-        <div data-cy="explore-posts-grid" className="grid grid-cols-3 gap-1">
+        <div data-cy="explore-posts-grid" className="grid grid-cols-2 sm:grid-cols-3 gap-1">
           {posts.map((post) => (
             <Link
               key={post.id}

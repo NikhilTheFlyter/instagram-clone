@@ -28,9 +28,9 @@ resilience4j:
     instances:
       loginService:
         registerHealthIndicator: true
-        slidingWindowType: COUNT_BASED
-        slidingWindowSize: 3
-        failureRateThreshold: 50
+        slidingWindowType: TIME_BASED
+        slidingWindowSize: 30
+        failureRateThreshold: 100
         minimumNumberOfCalls: 3
         waitDurationInOpenState: 60000
         permittedNumberOfCallsInHalfOpenState: 1

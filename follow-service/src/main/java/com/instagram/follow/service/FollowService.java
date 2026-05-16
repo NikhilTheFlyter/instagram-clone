@@ -1,5 +1,6 @@
 package com.instagram.follow.service;
 
+import com.instagram.follow.client.AuthServiceClient;
 import com.instagram.follow.dto.FollowResponseDTO;
 import com.instagram.follow.dto.FollowStatsDTO;
 import com.instagram.follow.dto.UserSummaryDTO;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class FollowService {
 
     private final FollowRepository followRepository;
+    private final AuthServiceClient authServiceClient;
 
     public FollowResponseDTO followUser(String followerId, String followingId) {
         if (followerId.equals(followingId)) {
@@ -64,18 +66,14 @@ public class FollowService {
     public List<UserSummaryDTO> getFollowers(String userId) {
         List<Follow> followers = followRepository.findByFollowingId(userId);
         return followers.stream()
-                .map(follow -> UserSummaryDTO.builder()
-                        .id(follow.getFollowerId())
-                        .build())
+                .map(follow -> authServiceClient.getUserSummary(follow.getFollowerId()))
                 .collect(Collectors.toList());
     }
 
     public List<UserSummaryDTO> getFollowing(String userId) {
         List<Follow> following = followRepository.findByFollowerId(userId);
         return following.stream()
-                .map(follow -> UserSummaryDTO.builder()
-                        .id(follow.getFollowingId())
-                        .build())
+                .map(follow -> authServiceClient.getUserSummary(follow.getFollowingId()))
                 .collect(Collectors.toList());
     }
 

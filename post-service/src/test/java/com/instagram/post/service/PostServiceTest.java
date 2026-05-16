@@ -10,6 +10,8 @@ import com.instagram.post.entity.Privacy;
 import com.instagram.post.exception.AlreadyLikedException;
 import com.instagram.post.exception.PostNotFoundException;
 import com.instagram.post.exception.UnauthorizedAccessException;
+import com.instagram.post.client.FollowServiceClient;
+import com.instagram.post.client.TrendingServiceClient;
 import com.instagram.post.repository.LikeRepository;
 import com.instagram.post.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,6 +48,12 @@ class PostServiceTest {
 
     @Mock
     private ModelMapper modelMapper;
+
+    @Mock
+    private FollowServiceClient followServiceClient;
+
+    @Mock
+    private TrendingServiceClient trendingServiceClient;
 
     @InjectMocks
     private PostService postService;
