@@ -22,6 +22,20 @@ spring:
         service-name: auth-service
         health-check-interval: 10s
 
+# Resilience4j Circuit Breaker
+resilience4j:
+  circuitbreaker:
+    instances:
+      loginService:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 3
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 3
+        waitDurationInOpenState: 60000
+        permittedNumberOfCallsInHalfOpenState: 1
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
 # Logging
 logging:
   level:

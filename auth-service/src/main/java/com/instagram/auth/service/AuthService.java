@@ -5,6 +5,7 @@ import com.instagram.auth.entity.User;
 import com.instagram.auth.exception.*;
 import com.instagram.auth.repository.UserRepository;
 import com.instagram.auth.util.JwtUtil;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -51,6 +52,7 @@ public class AuthService {
         return modelMapper.map(savedUser, UserResponseDTO.class);
     }
 
+    @CircuitBreaker(name = "loginService", fallbackMethod = "loginFallback")
     public LoginResponseDTO login(LoginRequestDTO request) {
         log.info("Login attempt for username: {}", request.getUsername());
 
@@ -68,6 +70,68 @@ public class AuthService {
                 .token(token)
                 .username(user.getUsername())
                 .message("Login successful")
+                .build();
+    }
+
+    public LoginResponseDTO loginFallback(LoginRequestDTO request, Throwable throwable) {
+        log.warn("Circuit breaker is open. Login attempt blocked for username: {}", request.getUsername());
+        return LoginResponseDTO.builder()
+                .token(null)
+                .username(request.getUsername())
+                .message("Too many failed login attempts. Service is temporarily unavailable. Please try again after 60 seconds.")
+                .build();
+    }
+
+    public UserProfileResponseDTO getUserProfile(String userId) {
+        log.info("Fetching profile for user id: {}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+        return UserProfileResponseDTO.builder()
+                .id(user.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .bio(user.getBio())
+                .profilePicture(user.getProfilePicture())
+                .createdAt(user.getCreatedAt())
+                .postCount(0)
+                .followerCount(0)
+                .followingCount(0)
+                .build();
+    }
+
+    public UserProfileResponseDTO updateProfile(String userId, UpdateProfileRequestDTO dto) {
+        log.info("Updating profile for user id: {}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+        if (dto.getFullName() != null) {
+            user.setFullName(dto.getFullName());
+        }
+        if (dto.getBio() != null) {
+            user.setBio(dto.getBio());
+        }
+        if (dto.getProfilePicture() != null) {
+            user.setProfilePicture(dto.getProfilePicture());
+        }
+
+        User updatedUser = userRepository.save(user);
+        log.info("Profile updated successfully for user id: {}", userId);
+
+        return UserProfileResponseDTO.builder()
+                .id(updatedUser.getId())
+                .fullName(updatedUser.getFullName())
+                .email(updatedUser.getEmail())
+                .username(updatedUser.getUsername())
+                .bio(updatedUser.getBio())
+                .profilePicture(updatedUser.getProfilePicture())
+                .createdAt(updatedUser.getCreatedAt())
+                .postCount(0)
+                .followerCount(0)
+                .followingCount(0)
                 .build();
     }
 

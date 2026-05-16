@@ -6,6 +6,7 @@ import com.instagram.auth.dto.UserResponseDTO;
 import com.instagram.auth.exception.EmailAlreadyExistsException;
 import com.instagram.auth.exception.UsernameAlreadyExistsException;
 import com.instagram.auth.service.AuthService;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,9 @@ class AuthControllerTest {
 
     @MockBean
     private AuthService authService;
+
+    @MockBean
+    private CircuitBreakerRegistry circuitBreakerRegistry;
 
     @Autowired
     private ObjectMapper objectMapper;
