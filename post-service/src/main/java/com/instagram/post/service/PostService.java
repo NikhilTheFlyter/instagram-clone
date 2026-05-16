@@ -137,6 +137,21 @@ public class PostService {
                 .build();
     }
 
+    public Page<PostResponseDTO> searchPosts(String query, String sort, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> posts;
+
+        if ("popular".equalsIgnoreCase(sort)) {
+            posts = postRepository.findByHashtagsContainingOrderByLikesCountDesc(query, pageable);
+        } else if ("recent".equalsIgnoreCase(sort)) {
+            posts = postRepository.findByHashtagsContainingOrderByCreatedAtDesc(query, pageable);
+        } else {
+            posts = postRepository.searchPosts(query, pageable);
+        }
+
+        return posts.map(post -> modelMapper.map(post, PostResponseDTO.class));
+    }
+
     private PostResponseDTO mapToPostResponseDTO(Post post, boolean liked) {
         PostResponseDTO dto = modelMapper.map(post, PostResponseDTO.class);
         dto.setLiked(liked);

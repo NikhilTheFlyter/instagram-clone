@@ -12,6 +12,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -187,5 +191,11 @@ public class AuthService {
         log.info("Password reset successfully for user: {}", user.getUsername());
 
         return Map.of("message", "Password reset successfully");
+    }
+
+    public Page<UserResponseDTO> searchUsers(String query, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> users = userRepository.searchUsers(query, pageable);
+        return users.map(user -> modelMapper.map(user, UserResponseDTO.class));
     }
 }
