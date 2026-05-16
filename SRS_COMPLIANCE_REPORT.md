@@ -1,7 +1,8 @@
 # SRS Compliance Report - Instagram Clone (UPDATED)
 
 **Generated:** 2026-05-15
-**Previous Report:** 2026-05-15 (initial)
+**Previous Report:** 2026-05-15 (second revision)
+**Current Revision:** Third revision (2026-05-15)
 **Project Root:** `/Users/bhatia_ji99/Desktop/flytbaseprojects/instagram-clone/`
 **SRS Source:** Instagram_SRS.pdf
 **Implementation Plan:** `~/.claude/plans/ethereal-swimming-engelbart.md`
@@ -18,26 +19,69 @@
 | 3 | Auth - Login + JWT (US02) | DONE | Login, JWT, forgot/reset password |
 | 4 | Auth - Circuit Breaker | DONE | Resilience4j on login (config deviation noted in Section 5) |
 | 5 | Auth - Profile Management | DONE | GET/PUT profile endpoints |
-| 6 | Auth - Unit Tests | DONE | 9 test files covering service, controller, validators, JwtUtil |
-| 7 | API Gateway Setup | DONE | Routes, JWT auth filter, CORS config -- **NEW since last report** |
+| 6 | Auth - Unit Tests | DONE | 9 test files, 63 test methods |
+| 7 | API Gateway Setup | DONE | Routes, JWT auth filter, CORS config |
 | 8 | Post - Create & View | DONE | Create, get by ID, get by user (paginated). File upload NOT implemented. |
 | 9 | Post - Like & Delete | DONE | Like/unlike/delete with cascade |
-| 10 | Post - Unit Tests | DONE | `PostServiceTest.java` with 12 test methods -- **NEW since last report** |
+| 10 | Post - Unit Tests | DONE | `PostServiceTest.java` with 12 test methods |
 | 11 | Follow Service | DONE | Follow/unfollow, followers/following lists, stats, isFollowing |
-| 12 | Follow - Unit Tests | DONE | `FollowServiceTest.java` with 10 test methods -- **NEW since last report** |
-| 13 | Trending Service | DONE | Entities, DTOs, repos, service with scoring algorithm, scheduled refresh, controller -- **NEW since last report** |
-| 14 | Trending - Unit Tests | NOT STARTED | No test files found in `trending-service/src/test/` |
-| 15 | Search Functionality | NOT STARTED | No search endpoints in any controller |
-| 16 | Swagger Documentation | NOT STARTED | springdoc dependency present but zero `@Tag`/`@Operation`/`@ApiResponse` annotations |
+| 12 | Follow - Unit Tests | DONE | `FollowServiceTest.java` with 10 test methods |
+| 13 | Trending Service | DONE | Entities, DTOs, repos, service with scoring algorithm, scheduled refresh, controller |
+| 14 | Trending - Unit Tests | DONE | `TrendingServiceTest.java` with 8 test methods -- **NEW since last report** |
+| 15 | Search Functionality | DONE | `GET /api/auth/search/users` + `GET /api/posts/search` with sort options -- **NEW since last report** |
+| 16 | Swagger Documentation | PARTIALLY DONE | `@Tag` on 4 controllers, `@Operation`/`@ApiResponses` on 17/26 endpoints, `OpenApiConfig` in all services. `@Schema` on DTOs still missing. -- **NEW since last report** |
 | 17 | Load Balancing | NOT STARTED | `lb://` prefix in gateway config, but no multi-instance setup verified |
 | 18 | Integration Between Services | NOT STARTED | No `RestTemplate`/`WebClient`/`FeignClient` in any service |
 | 19 | Final Testing + SonarQube | NOT STARTED | No JaCoCo plugin, no SonarQube config |
 
-**Overall Progress: 14/20 targets DONE (70%).** Up from ~58% in previous report. Targets 7, 10, 12, and 13 are now complete.
+**Overall Progress: 17/20 targets DONE or PARTIALLY DONE (85%).** Up from 70% in previous report. Targets 14, 15, and 16 are now complete or partially complete.
 
 ---
 
-## Section 2: User Story Coverage (US01-US08)
+## Section 2: Test Coverage Summary
+
+### Test File Inventory
+
+| Service | Test File | @Test Count |
+|---------|-----------|-------------|
+| auth-service | `AuthControllerTest.java` | 4 |
+| auth-service | `RegisterRequestDTOValidationTest.java` | 10 |
+| auth-service | `AuthServiceLoginTest.java` | 5 |
+| auth-service | `AuthServicePasswordResetTest.java` | 7 |
+| auth-service | `AuthServiceTest.java` | 6 |
+| auth-service | `JwtUtilTest.java` | 8 |
+| auth-service | `EmailDomainValidatorTest.java` | 9 |
+| auth-service | `FullNameValidatorTest.java` | 9 |
+| auth-service | `PasswordMatchValidatorTest.java` | 5 |
+| follow-service | `FollowServiceTest.java` | 10 |
+| post-service | `PostServiceTest.java` | 12 |
+| trending-service | `TrendingServiceTest.java` | 8 |
+
+**Totals: 12 test files, 93 @Test methods across 4 services.**
+
+| Service | Test Files | Test Methods | Coverage Status |
+|---------|-----------|--------------|-----------------|
+| auth-service | 9 | 63 | Good coverage of service, controller, validators, JWT util |
+| post-service | 1 | 12 | Covers CRUD + like/unlike |
+| follow-service | 1 | 10 | Covers follow/unfollow/stats |
+| trending-service | 1 | 8 | Covers getTrendingPosts, getTrendingHashtags, addPost, removePost -- **NEW** |
+| api-gateway | 0 | 0 | No tests (filter, JWT util untested) |
+| **TOTAL** | **12** | **93** | |
+
+### Untested Service Methods
+
+| Service | Method | Notes |
+|---------|--------|-------|
+| auth-service | `searchUsers()` | New method, no dedicated test |
+| post-service | `searchPosts()` | New method, no dedicated test |
+| trending-service | `refreshTrending()` | Complex scheduled method with `@Scheduled`, not unit tested |
+| trending-service | `recalculateHashtagScores()` | Private helper, tested indirectly through `refreshTrending()` only |
+| api-gateway | `JwtAuthenticationFilter.filter()` | No test file exists |
+| api-gateway | `JwtUtil.*` | No test file exists |
+
+---
+
+## Section 3: User Story Coverage (US01-US08)
 
 ### US01 - User Registration
 
@@ -114,7 +158,7 @@
 
 | # | Acceptance Criteria | Status | Location / Details |
 |---|---------------------|--------|--------------------|
-| 1 | Search for other users on the platform | [ ] NOT DONE | Search NOT implemented. Planned in Target 15. |
+| 1 | Search for other users on the platform | [x] DONE | `GET /api/auth/search/users?q=keyword` with regex search on username, fullName, bio -- **NEW** |
 | 2 | View user's profile before following | [x] DONE | `GET /api/auth/profile/{userId}` in `AuthController.java` |
 | 3 | Follow a user via button/icon | [x] DONE | `POST /api/follow/{targetUserId}` in `FollowController.java` |
 | 4 | Follow button visual indication | [x] DONE (backend) | `isFollowing` in `FollowResponseDTO` + `GET /api/follow/check/{targetUserId}` |
@@ -124,7 +168,7 @@
 | 8 | Real-time follower count updates | [ ] NOT DONE | No WebSocket/SSE. Not in plan. |
 | 9 | Follow multiple users without limitations | [x] DONE | No restrictions. Self-follow blocked by `SelfFollowException`. |
 
-**Summary:** 6 DONE, 3 NOT DONE. No changes from previous report.
+**Summary:** 7 DONE, 2 NOT DONE. **Improved from 6 DONE** -- search for users is now implemented (criterion 1).
 
 ---
 
@@ -132,15 +176,15 @@
 
 | # | Acceptance Criteria | Status | Location / Details |
 |---|---------------------|--------|--------------------|
-| 1 | Enter username or hashtag in search bar | [ ] NOT DONE | Target 15 not started. No search endpoints exist. |
-| 2 | View list of matching users or posts | [ ] NOT DONE | Target 15. |
-| 3 | Display profile picture, username, bio, content | [ ] NOT DONE | Target 15. |
-| 4 | Filter/sort by relevance, popularity, recency | [ ] NOT DONE | Target 15. |
-| 5 | Click on result to view details | [ ] NOT DONE | Underlying GET endpoints exist (profile, post by ID), but no search to link them. |
-| 6 | Refine search with additional keywords/filters | [ ] NOT DONE | Target 15. |
+| 1 | Enter username or hashtag in search bar | [x] DONE (backend) | `GET /api/auth/search/users?q=keyword` and `GET /api/posts/search?q=hashtag` -- **NEW** |
+| 2 | View list of matching users or posts | [x] DONE | Both endpoints return paginated results (`Page<UserResponseDTO>`, `Page<PostResponseDTO>`) -- **NEW** |
+| 3 | Display profile picture, username, bio, content | [x] DONE (partial) | `UserResponseDTO` returns username, fullName. `PostResponseDTO` returns caption, mediaUrls, hashtags. Bio/profile picture returned only in `UserProfileResponseDTO` (profile endpoint, not search). -- **NEW** |
+| 4 | Filter/sort by relevance, popularity, recency | [x] DONE (partial) | `GET /api/posts/search?sort=popular` sorts by likesCount desc. `sort=recent` sorts by createdAt desc. `sort=relevance` (default) uses MongoDB regex text match. User search does not support sort parameter. -- **NEW** |
+| 5 | Click on result to view details | [x] DONE | Search results return IDs; client can call `GET /api/posts/{postId}` or `GET /api/auth/profile/{userId}` |
+| 6 | Refine search with additional keywords/filters | [ ] NOT DONE | Only single query parameter `q` supported. No multi-keyword/filter combination. |
 | 7 | Save/bookmark specific searches | [ ] NOT DONE | Not in plan at all. |
 
-**Summary:** 0/7 DONE. No changes from previous report. Entire user story unimplemented.
+**Summary:** 5 DONE (all new since last report), 2 NOT DONE. **Major improvement from 0/7 previously.**
 
 ---
 
@@ -165,135 +209,145 @@
 
 | # | Acceptance Criteria | Status | Location / Details |
 |---|---------------------|--------|--------------------|
-| 1 | Dedicated trending section/page | [x] DONE | `GET /api/trending/posts` + `GET /api/trending/hashtags` in `TrendingController.java` -- **NEW** |
-| 2 | Curated list of popular posts/topics/hashtags | [x] DONE | `TrendingService.getTrendingPosts()` sorted by score; `getTrendingHashtags()` sorted by score -- **NEW** |
+| 1 | Dedicated trending section/page | [x] DONE | `GET /api/trending/posts` + `GET /api/trending/hashtags` in `TrendingController.java` |
+| 2 | Curated list of popular posts/topics/hashtags | [x] DONE | `TrendingService.getTrendingPosts()` sorted by score; `getTrendingHashtags()` sorted by score |
 | 3 | Visually appealing grid/carousel layout | [ ] NOT DONE | Frontend-only |
-| 4 | Display views, likes, comments count | [x] DONE (partial) | `TrendingPostDTO` includes `likesCount`. Views and comments count NOT tracked. -- **NEW** |
+| 4 | Display views, likes, comments count | [x] DONE (partial) | `TrendingPostDTO` includes `likesCount`. Views and comments count NOT tracked. |
 | 5 | Click trending post for details | [x] DONE | `TrendingPostDTO` returns `postId`; client can call `GET /api/posts/{postId}` |
-| 6 | Regularly updated trending section | [x] DONE | `@Scheduled(fixedRate = 60000)` in `TrendingService.refreshTrending()` -- **NEW** |
-| 7 | Filter by recency, popularity, location | [x] DONE (partial) | `filter=popular` (default) and `filter=recent` supported. Location filter NOT implemented. -- **NEW** |
+| 6 | Regularly updated trending section | [x] DONE | `@Scheduled(fixedRate = 60000)` in `TrendingService.refreshTrending()` |
+| 7 | Filter by recency, popularity, location | [x] DONE (partial) | `filter=popular` (default) and `filter=recent` supported. Location filter NOT implemented. |
 | 8 | Real-time updates on trending content | [ ] NOT DONE | No WebSocket/SSE. Polling via REST only. |
 
-**Summary:** 5 DONE (new since last report), 2 PARTIAL, 1 NOT DONE. Major improvement from 0 DONE previously.
+**Summary:** 5 DONE, 2 PARTIAL, 1 NOT DONE. No changes from previous report for this user story.
 
 ---
 
-## Section 3: Critical Gaps (Priority Order)
+## Section 4: Swagger / OpenAPI Documentation Status
 
-### 1. No Inter-Service Communication
+### Class-Level `@Tag` Annotations
+
+| Controller | `@Tag` Present | Tag Name |
+|-----------|---------------|----------|
+| `AuthController` | YES | "Authentication" |
+| `PostController` | YES | "Posts" |
+| `FollowController` | YES | "Follow" |
+| `TrendingController` | YES | "Trending" |
+| Gateway (no controller) | N/A | N/A |
+
+### Method-Level `@Operation` + `@ApiResponses` Annotations
+
+| Controller | Method | `@Operation` | `@ApiResponses` |
+|-----------|--------|-------------|----------------|
+| **AuthController** | `register()` | YES | YES (201, 400, 409) |
+| | `login()` | YES | YES (200, 400, 401) |
+| | `getLoginCircuitBreakerStatus()` | YES | YES (200) |
+| | `forgotPassword()` | YES | YES (200, 404) |
+| | `resetPassword()` | YES | YES (200, 400) |
+| | `getUserProfile()` | YES | YES (200, 404) |
+| | `updateProfile()` | YES | YES (200, 400, 404) |
+| | `searchUsers()` | YES | YES (200) |
+| **PostController** | `createPost()` | YES | YES (201, 400) |
+| | `getPostById()` | YES | YES (200, 404) |
+| | `getPostsByUserId()` | YES | YES (200) |
+| | `deletePost()` | YES | YES (204, 403, 404) |
+| | `likePost()` | YES | YES (200, 409) |
+| | `unlikePost()` | YES | YES (200, 404) |
+| | `getLikeStatus()` | **NO** | **NO** |
+| | `searchPosts()` | **NO** | **NO** |
+| **FollowController** | `followUser()` | YES | YES (200, 400, 409) |
+| | `unfollowUser()` | YES | YES (200, 400) |
+| | `getFollowers()` | YES | YES (200) |
+| | `getFollowing()` | **NO** | **NO** |
+| | `getFollowStats()` | **NO** | **NO** |
+| | `isFollowing()` | **NO** | **NO** |
+| **TrendingController** | `getTrendingPosts()` | **NO** | **NO** |
+| | `getTrendingHashtags()` | **NO** | **NO** |
+| | `addPost()` | **NO** | **NO** |
+| | `removePost()` | **NO** | **NO** |
+
+**Summary: 17/26 endpoints annotated (65%).** Auth and Post controllers are nearly complete. Follow is partial. Trending has zero method-level annotations.
+
+### `OpenApiConfig.java` (Programmatic API Info)
+
+| Service | Present | Title |
+|---------|---------|-------|
+| auth-service | YES | "Auth Service API" |
+| post-service | YES | "Post Service API" |
+| follow-service | YES | "Follow Service API" |
+| trending-service | YES | "Trending Service API" |
+
+### `@Schema` on DTOs
+
+**Status: NOT DONE.** Zero `@Schema` annotations found across all DTO classes. This means Swagger UI auto-generates field docs without descriptions, examples, or constraints.
+
+---
+
+## Section 5: Critical Gaps (Priority Order)
+
+### 1. No Inter-Service Communication (UNCHANGED)
 - **SRS Section:** Architecture -- "different microservices communicate with each other using REST APIs"
 - **Plan Target:** 18 (Integration Between Services)
 - **What's missing:** No `RestTemplate`, `WebClient`, or `FeignClient` in any service. All 5 services are completely isolated.
 - **Specific impact:**
-  - `auth-service` profile returns hardcoded `postCount=0`, `followerCount=0`, `followingCount=0` (line 99-101 in `AuthService.java`)
+  - `auth-service` profile returns hardcoded `postCount=0`, `followerCount=0`, `followingCount=0` (lines 103-105 in `AuthService.java`)
   - `post-service` cannot fetch followed users' posts for feed
   - `trending-service` cannot automatically ingest posts from `post-service` (has manual `POST /api/trending/posts` endpoint instead)
   - `follow-service` follower/following lists return only user IDs, not names/profile pictures
 
-### 2. Search Functionality Not Implemented (US06)
-- **SRS Section:** US06 -- Search specific users/hashtags (entire user story)
-- **Plan Target:** 15 (Search Functionality)
-- **What's missing:** No search endpoints, no MongoDB text indexes on `username`/`fullName`/`bio`/`caption`/`hashtags`
-- **Specific implementation needed:**
-  - `GET /api/auth/search/users?q=keyword&sort=relevance` in auth-service
-  - `GET /api/posts/search?q=hashtag&sort=popular` in post-service
-  - MongoDB text indexes on relevant fields
+### 2. Swagger Documentation Incomplete (IMPROVED FROM "NOT STARTED")
+- **SRS Section:** API Design -- "Use Swagger for generating the API documentation"
+- **Plan Target:** 16 (Swagger Documentation)
+- **What's done:** `@Tag` on all 4 controllers, `@Operation`/`@ApiResponses` on 17/26 endpoints, `OpenApiConfig` in all services.
+- **What's still missing:**
+  - 9 endpoints lacking `@Operation`/`@ApiResponses`: PostController (2), FollowController (3), TrendingController (4)
+  - Zero `@Schema` annotations on any DTO class (16+ DTO classes)
+  - No response examples in `@ApiResponse`
 
-### 3. File/Media Upload Not Implemented
+### 3. File/Media Upload Not Implemented (UNCHANGED)
 - **SRS Section:** US03 -- "select multiple photos or videos from my device's gallery"
 - **Plan Target:** 8 (mentions `POST /api/posts/upload`)
 - **What's missing:** No file upload endpoint. `CreatePostRequestDTO.mediaUrls` accepts URL strings but there is no mechanism to upload actual files and generate those URLs.
-- **Specific implementation needed:** `POST /api/posts/upload` endpoint that accepts `MultipartFile`, stores it, and returns a URL
 
-### 4. Swagger Annotations Missing
-- **SRS Section:** API Design -- "Use Swagger for generating the API documentation"
-- **Plan Target:** 16 (Swagger Documentation)
-- **What's missing:** `springdoc-openapi-starter-webmvc-ui` dependency exists in all 5 service pom.xml files. However, zero `@Tag`, `@Operation`, `@ApiResponse`, or `@Schema` annotations exist anywhere. Swagger UI auto-generates basic docs but without descriptions, parameter docs, or response examples.
-- **Specific implementation needed:** Annotate all controllers and DTOs with OpenAPI annotations
-
-### 5. Trending Service Unit Tests Missing
-- **SRS Section:** Testing -- "Write JUnit test cases for all service methods using Mockito"
-- **Plan Target:** 14 (Trending - Unit Tests)
-- **What's missing:** No test files in `trending-service/src/test/`. `TrendingService` has 6 public methods: `getTrendingPosts()`, `getTrendingHashtags()`, `refreshTrending()`, `recalculateHashtagScores()`, `addPost()`, `removePost()`.
-
-### 6. No Caching Anywhere
+### 4. No Caching Anywhere (UNCHANGED)
 - **SRS Section:** Non-Functional Requirements -- "Implement caching mechanisms to improve performance"
 - **Plan Target:** Not addressed in the plan
 - **What's missing:** No `@Cacheable`, `@CacheEvict`, `@CachePut`, or `@EnableCaching` annotations. No caching library (Redis, Caffeine, etc.) in any pom.xml.
-- **Specific implementation needed:** At minimum, cache frequently accessed data like user profiles, trending posts, and follow stats
 
-### 7. No JaCoCo/SonarQube Setup
+### 5. No JaCoCo/SonarQube Setup (UNCHANGED)
 - **SRS Section:** Code Quality -- SonarQube metrics table (Security A, Reliability A, Issues <=5, Coverage >=80%, Duplications <=3%)
 - **Plan Target:** 19 (Final Testing + SonarQube)
 - **What's missing:** No `jacoco-maven-plugin` in any pom.xml. No `sonar-maven-plugin` configuration. Cannot measure or verify code coverage.
 
-### 8. Load Balancing Not Verified
+### 6. Load Balancing Not Verified (UNCHANGED)
 - **SRS Section:** Microservice Communication -- "Create two instances for any Microservice and implement load balancing"
 - **Plan Target:** 17 (Load Balancing)
 - **What's missing:** Gateway uses `lb://` prefix which supports load balancing via Consul. But no second instance of any service has been configured or tested.
 
-### 9. Comment and Share Functionality Missing
+### 7. Comment and Share Functionality Missing (UNCHANGED)
 - **SRS Section:** US03 -- "like, comment, share"; US04 -- interaction features; US07 -- "associated comments or interactions removed"
 - **Plan Target:** Not in the plan
-- **What's missing:** No Comment entity, repository, service, or controller anywhere. No share mechanism. The SRS explicitly mentions comments and shares as interaction types.
+- **What's missing:** No Comment entity, repository, service, or controller anywhere. No share mechanism.
 
-### 10. Notification System Missing
+### 8. Notification System Missing (UNCHANGED)
 - **SRS Section:** US05 -- "receive updates or notifications about the activities of the users I follow"
 - **Plan Target:** Not in the plan
 - **What's missing:** No notification service, no event-driven architecture, no WebSocket/SSE implementation
 
-### 11. Bookmark/Save Searches Missing
-- **SRS Section:** US06 -- "save or bookmark specific searches for quick access in the future"
-- **Plan Target:** Not in the plan
-- **What's missing:** Would require a SavedSearch entity and endpoints
+### 9. Search Refinement and Bookmarks Missing (REDUCED SEVERITY)
+- **SRS Section:** US06 -- "refine search with additional keywords/filters" and "save or bookmark specific searches"
+- **What's done:** Basic single-query search with sort by relevance/popular/recent on posts
+- **What's still missing:** Multi-keyword/filter combination, saved/bookmarked searches
 
-### 12. Location-Based Trending Filter Missing
+### 10. Location-Based Trending Filter Missing (UNCHANGED)
 - **SRS Section:** US08 -- "filter the trending content based on different criteria, such as sorting by recency, popularity, or location"
-- **Plan Target:** Not in the plan
 - **What's missing:** No location data on posts, no location-based filtering
 
----
-
-## Section 4: Non-Functional Requirements Checklist
-
-### Performance
-- [ ] Fast and responsive, minimal lag -- Basic service implementations exist. No performance tuning, no caching.
-- [ ] Implement caching mechanisms -- **NOT IMPLEMENTED.** No caching layer anywhere.
-- [ ] Lazy loading for images -- Frontend concern, but no backend pagination cursor support beyond basic page/size.
-
-### Scalability
-- [x] Handle large traffic, scale as needed -- Microservice architecture + Consul discovery in place.
-- [ ] Load balancing -- Gateway uses `lb://` prefix. No multi-instance setup verified (Target 17).
-- [ ] Multiple instances -- Not configured or tested.
-
-### Security
-- [x] BCrypt password hashing -- `BCryptPasswordEncoder` bean in `AppConfig.java`, used in `AuthService.register()` and `AuthService.resetPassword()`.
-- [x] JWT authentication -- `JwtUtil` in auth-service generates tokens with HMAC-SHA256, 24h expiry. Gateway `JwtUtil` validates them. **NEW: Gateway JWT filter now validates all protected routes.**
-- [ ] OWASP protection (SQL injection, XSS) -- MongoDB mitigates SQL injection. No explicit XSS sanitization or Content-Security-Policy headers.
-- [ ] OAuth/Spring Security -- Spring Security dependency included in auth-service but auto-configuration DISABLED (`SecurityAutoConfiguration` excluded). No `SecurityFilterChain`, no OAuth2 flows.
-- [x] Gateway JWT filter -- **NEW: `JwtAuthenticationFilter.java` implemented as `GlobalFilter`.** Validates JWT on all routes except open endpoints (`/register`, `/login`, `/forgot-password`, `/reset-password`, health checks). Extracts userId/username and forwards as `X-User-Id`/`X-Username` headers to downstream services.
-
-### Reliability
-- [ ] Circuit breaker on all critical services -- Only on `loginService` in auth-service. No circuit breaker on post-service, follow-service, trending-service, or any inter-service call.
-- [ ] Fallback behaviors for all critical operations -- Only `loginFallback()` exists.
-- [x] Minimal downtime -- Consul health checks configured on all services.
-
-### Session Management
-- [x] Secure session management -- JWT-based (stateless). 24-hour token expiry. Gateway validates tokens.
-- [ ] Short-lived sessions with automatic timeouts -- 24h is long for "short-lived." No refresh token mechanism. No token blacklisting/revocation.
-
-### Maintainability
-- [x] Clear and well-organized code -- Consistent package structure across all services: `controller/`, `service/`, `repository/`, `entity/`, `dto/`, `exception/`, `config/`, `aspect/`, `validation/`.
-
-### Compatibility
-- [ ] Compatible with wide range of devices -- No frontend exists.
-
-### UI/UX
-- [ ] Intuitive interface, seamless experience -- No frontend exists.
+### 11. Gateway Unit Tests Missing
+- **What's missing:** `api-gateway` has `JwtAuthenticationFilter.java` and `JwtUtil.java` with zero test files.
 
 ---
 
-## Section 5: Circuit Breaker Config Deviation
+## Section 6: Circuit Breaker Config Deviation
 
 **SRS Requirement:** "Circuit Breaker pattern should be implemented for all the critical services with a timeout of 3 seconds and error threshold of 50%. The circuit breaker should open after 10 consecutive failures and remain open for 60 seconds."
 
@@ -328,22 +382,64 @@ resilience4j:
 
 ---
 
-## Section 6: Implementation Guidelines Compliance
+## Section 7: Non-Functional Requirements Checklist
+
+### Performance
+- [ ] Fast and responsive, minimal lag -- Basic service implementations exist. No performance tuning, no caching.
+- [ ] Implement caching mechanisms -- **NOT IMPLEMENTED.** No caching layer anywhere.
+- [ ] Lazy loading for images -- Frontend concern, but no backend pagination cursor support beyond basic page/size.
+
+### Scalability
+- [x] Handle large traffic, scale as needed -- Microservice architecture + Consul discovery in place.
+- [ ] Load balancing -- Gateway uses `lb://` prefix. No multi-instance setup verified (Target 17).
+- [ ] Multiple instances -- Not configured or tested.
+
+### Security
+- [x] BCrypt password hashing -- `BCryptPasswordEncoder` bean in `AppConfig.java`, used in `AuthService.register()` and `AuthService.resetPassword()`.
+- [x] JWT authentication -- `JwtUtil` in auth-service generates tokens with HMAC-SHA256, 24h expiry. Gateway `JwtUtil` validates them. Gateway JWT filter validates all protected routes.
+- [ ] OWASP protection (SQL injection, XSS) -- MongoDB mitigates SQL injection. No explicit XSS sanitization or Content-Security-Policy headers.
+- [ ] OAuth/Spring Security -- Spring Security dependency included in auth-service but auto-configuration DISABLED (`SecurityAutoConfiguration` excluded). No `SecurityFilterChain`, no OAuth2 flows.
+- [x] Gateway JWT filter -- `JwtAuthenticationFilter.java` implemented as `GlobalFilter`. Validates JWT on all routes except open endpoints (`/register`, `/login`, `/forgot-password`, `/reset-password`, health checks). Extracts userId/username and forwards as `X-User-Id`/`X-Username` headers to downstream services.
+
+### Reliability
+- [ ] Circuit breaker on all critical services -- Only on `loginService` in auth-service. No circuit breaker on post-service, follow-service, trending-service, or any inter-service call.
+- [ ] Fallback behaviors for all critical operations -- Only `loginFallback()` exists.
+- [x] Minimal downtime -- Consul health checks configured on all services.
+
+### Session Management
+- [x] Secure session management -- JWT-based (stateless). 24-hour token expiry. Gateway validates tokens.
+- [ ] Short-lived sessions with automatic timeouts -- 24h is long for "short-lived." No refresh token mechanism. No token blacklisting/revocation.
+
+### Maintainability
+- [x] Clear and well-organized code -- Consistent package structure across all services: `controller/`, `service/`, `repository/`, `entity/`, `dto/`, `exception/`, `config/`, `aspect/`, `validation/`.
+
+### Compatibility
+- [ ] Compatible with wide range of devices -- No frontend exists.
+
+### UI/UX
+- [ ] Intuitive interface, seamless experience -- No frontend exists.
+
+---
+
+## Section 8: Implementation Guidelines Compliance
 
 ### Lombok Usage
 **Status: DONE**
 - All entities, DTOs, and services use Lombok: `@Data`, `@Builder`, `@NoArgsConstructor`, `@AllArgsConstructor`, `@RequiredArgsConstructor`, `@Slf4j`.
-- Used for logging (`@Slf4j`) in all controllers, services, aspects, and filters (including new `JwtAuthenticationFilter.java`).
-- Files verified: All 47+ `.java` files across 5 services.
+- Used for logging (`@Slf4j`) in all controllers, services, aspects, and filters.
+- Files verified: All 90 `.java` source files across 5 services.
 
 ### Lambdas and Streams Usage
 **Status: DONE**
 - `FollowService.getFollowers()` / `getFollowing()` -- `.stream().map().collect(Collectors.toList())`
 - `PostService.getPostsByUserId()` -- `posts.map(post -> ...)` on `Page<Post>`
-- `TrendingService.getTrendingHashtags()` -- `hashtags.getContent().stream().map().collect()` **(NEW)**
-- `TrendingService.refreshTrending()` -- `hashtagCounts.merge(hashtag, 1L, Long::sum)` **(NEW)**
+- `PostService.searchPosts()` -- `posts.map(post -> modelMapper.map(post, PostResponseDTO.class))` **(NEW)**
+- `AuthService.searchUsers()` -- `users.map(user -> modelMapper.map(user, UserResponseDTO.class))` **(NEW)**
+- `TrendingService.getTrendingHashtags()` -- `hashtags.getContent().stream().map().collect()`
+- `TrendingService.refreshTrending()` -- `hashtagCounts.merge(hashtag, 1L, Long::sum)`
+- `TrendingService.removePost()` -- `existingOpt.ifPresent(trendingPostRepository::delete)` (method reference)
 - `GlobalExceptionHandler` (all services) -- lambda in `forEach` for validation errors
-- `JwtAuthenticationFilter.isOpenEndpoint()` -- `openEndpoints.stream().anyMatch(path::startsWith)` **(NEW)**
+- `JwtAuthenticationFilter.isOpenEndpoint()` -- `openEndpoints.stream().anyMatch(path::startsWith)`
 
 ### Logical Layers (controller, service, DTO, entity)
 **Status: DONE**
@@ -366,27 +462,28 @@ resilience4j:
 
 | Requirement | Status | Details |
 |-------------|--------|---------|
-| Handle unauthorized access cases | DONE | `UnauthorizedAccessException` in post-service. **NEW: Gateway JWT filter returns 401 for missing/invalid tokens.** |
+| Handle unauthorized access cases | DONE | `UnauthorizedAccessException` in post-service. Gateway JWT filter returns 401 for missing/invalid tokens. |
 | Custom exceptions with user-defined messages | DONE | 11 custom exceptions: `UsernameAlreadyExistsException`, `EmailAlreadyExistsException`, `InvalidCredentialsException`, `UserNotFoundException`, `InvalidResetTokenException`, `PostNotFoundException`, `UnauthorizedAccessException`, `AlreadyLikedException`, `SelfFollowException`, `AlreadyFollowingException`, `NotFollowingException`. |
-| Centralized exception handler | DONE | `@RestControllerAdvice GlobalExceptionHandler` in auth-service, post-service, follow-service, AND trending-service **(NEW)**. |
-| LoggingAspect | DONE | AOP-based `LoggingAspect` in all 4 non-gateway services **(trending-service NEW)**. `@Around` + `@AfterThrowing` on service layer methods. |
+| Centralized exception handler | DONE | `@RestControllerAdvice GlobalExceptionHandler` in auth-service, post-service, follow-service, AND trending-service. |
+| LoggingAspect | DONE | AOP-based `LoggingAspect` in all 4 non-gateway services. `@Around` + `@AfterThrowing` on service layer methods. |
 | Proper success/error responses | DONE | Appropriate HTTP status codes: 201 Created, 200 OK, 204 No Content, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 500 Internal Server Error. |
 
 ### DTOs and Mapping
 
 | Requirement | Status | Details |
 |-------------|--------|---------|
-| DTOs for API request/response | DONE | All endpoints use DTOs. 16 DTO classes total. |
+| DTOs for API request/response | DONE | All endpoints use DTOs. 16+ DTO classes total. |
 | Entities not exposed directly | DONE | `User` entity has `password`; `UserResponseDTO` / `UserProfileResponseDTO` exclude it. |
-| ModelMapper for entity-DTO conversion | DONE | `ModelMapper` bean in each service's `AppConfig`. Used in `AuthService`, `PostService`, and `TrendingService` **(NEW)**. |
+| ModelMapper for entity-DTO conversion | DONE | `ModelMapper` bean in each service's `AppConfig`. Used in `AuthService`, `PostService`, `TrendingService`, and search methods **(NEW)**. |
 
 ### Database Interaction
 
 | Requirement | Status | Details |
 |-------------|--------|---------|
-| Spring Data Repository | DONE | `UserRepository`, `PostRepository`, `LikeRepository`, `FollowRepository`, `TrendingPostRepository` **(NEW)**, `TrendingHashtagRepository` **(NEW)** -- all extend `MongoRepository`. |
+| Spring Data Repository | DONE | `UserRepository`, `PostRepository`, `LikeRepository`, `FollowRepository`, `TrendingPostRepository`, `TrendingHashtagRepository` -- all extend `MongoRepository`. |
 | Appropriate DB properties | DONE | Separate MongoDB databases per service: `instagram_auth`, `instagram_posts`, `instagram_follow`, `instagram_trending`. |
-| Indexes | DONE | `@Indexed(unique=true)` on `User.email`, `User.username`, `TrendingPost.postId` **(NEW)**, `TrendingHashtag.hashtag` **(NEW)**. `@CompoundIndex` on `Like(postId, userId)` and `Follow(followerId, followingId)`. |
+| Indexes | DONE | `@Indexed(unique=true)` on `User.email`, `User.username`, `TrendingPost.postId`, `TrendingHashtag.hashtag`. `@CompoundIndex` on `Like(postId, userId)` and `Follow(followerId, followingId)`. |
+| Custom Queries | DONE | `UserRepository.searchUsers()` uses `@Query` with MongoDB `$or` + `$regex` for search **(NEW)**. `PostRepository.searchPosts()` uses `@Query` with `$or` + `$regex` on caption and hashtags **(NEW)**. `PostRepository.findByHashtagsContainingOrderByLikesCountDesc()` and `findByHashtagsContainingOrderByCreatedAtDesc()` for sorted search **(NEW)**. |
 
 ### API Design
 
@@ -396,7 +493,7 @@ resilience4j:
 | Server port configuration | DONE | auth:8081, post:8082, follow:8083, trending:8084, gateway:8080. |
 | Appropriate HTTP methods | DONE | GET for reads, POST for creates, PUT for updates, DELETE for removals. |
 | Appropriate status codes | DONE | Full range: 201, 200, 204, 400, 401, 403, 404, 409, 500. |
-| Swagger for API documentation | NOT DONE | Dependency present. No annotations. Target 16 not started. |
+| Swagger for API documentation | PARTIALLY DONE | `@Tag` on all 4 controllers. `@Operation`/`@ApiResponses` on 17/26 endpoints. `OpenApiConfig` in all 4 non-gateway services. `@Schema` still missing on DTOs. -- **IMPROVED from NOT DONE** |
 
 ### Validation
 
@@ -411,9 +508,10 @@ resilience4j:
 
 | Requirement | Status | Details |
 |-------------|--------|---------|
-| JUnit test cases for all service methods | PARTIALLY DONE | auth-service: 9 test files (DONE). post-service: 1 test file with 12 tests **(NEW)**. follow-service: 1 test file with 10 tests **(NEW)**. trending-service: NO tests. |
+| JUnit test cases for all service methods | MOSTLY DONE | auth-service: 9 test files, 63 tests. post-service: 1 test file, 12 tests. follow-service: 1 test file, 10 tests. trending-service: 1 test file, 8 tests **(NEW)**. api-gateway: 0 tests. |
 | Mockito usage | DONE | `@ExtendWith(MockitoExtension.class)`, `@Mock`, `@InjectMocks`, `@MockBean`, `ArgumentCaptor` used properly in all test files. |
 | 80% code coverage | UNKNOWN | No JaCoCo plugin configured. Cannot measure. |
+| Search method tests | NOT DONE | `AuthService.searchUsers()` and `PostService.searchPosts()` have no dedicated test methods. |
 
 ### SonarQube Metrics
 
@@ -437,7 +535,7 @@ resilience4j:
 
 ---
 
-## Section 7: Recommendations for Next Sprint
+## Section 9: Recommendations for Next Sprint
 
 Listed in priority order based on SRS requirements and current gaps:
 
@@ -450,45 +548,42 @@ Listed in priority order based on SRS requirements and current gaps:
 5. Add circuit breakers (Resilience4j) on all inter-service calls with: `slidingWindowSize: 10`, `slowCallDurationThreshold: 3s`, `failureRateThreshold: 50`, `waitDurationInOpenState: 60s`
 6. Add fallback methods that return graceful defaults (e.g., `postCount=0` if post-service is down)
 
-### Priority 2: Search Functionality (Target 15)
-**Impact: Entire US06 unimplemented (7 acceptance criteria)**
-1. Add MongoDB text indexes on `User.username`, `User.fullName`, `User.bio`
-2. Add `GET /api/auth/search/users?q=keyword&sort=relevance` endpoint
-3. Add MongoDB text index on `Post.caption`, `Post.hashtags`
-4. Add `GET /api/posts/search?q=hashtag&sort=popular` endpoint
-5. Support sort by relevance, popularity, recency
+### Priority 2: Complete Swagger Annotations (Target 16 -- finish)
+**Impact: 9 endpoints still missing `@Operation`/`@ApiResponses`, all DTOs missing `@Schema`**
+1. Add `@Operation`/`@ApiResponses` to the 9 remaining endpoints:
+   - `PostController.getLikeStatus()`, `PostController.searchPosts()`
+   - `FollowController.getFollowing()`, `FollowController.getFollowStats()`, `FollowController.isFollowing()`
+   - `TrendingController.getTrendingPosts()`, `TrendingController.getTrendingHashtags()`, `TrendingController.addPost()`, `TrendingController.removePost()`
+2. Add `@Schema` annotations to all DTO classes (description, example values, required fields)
+3. Verify Swagger UI loads at `http://localhost:{port}/swagger-ui.html` for each service
 
-### Priority 3: Trending Service Unit Tests (Target 14)
-**Impact: Testing requirement coverage**
-1. Create `TrendingServiceTest.java` covering: `getTrendingPosts()`, `getTrendingHashtags()`, `refreshTrending()`, `addPost()`, `removePost()`
-2. Mock `TrendingPostRepository` and `TrendingHashtagRepository`
+### Priority 3: Add Missing Test Methods
+**Impact: Achieve comprehensive test coverage before SonarQube setup**
+1. Add tests for `AuthService.searchUsers()` in auth-service
+2. Add tests for `PostService.searchPosts()` in post-service
+3. Add tests for `TrendingService.refreshTrending()` (scheduled job logic)
+4. Create `JwtAuthenticationFilterTest.java` and `JwtUtilTest.java` in api-gateway
+5. Consider integration tests for search with MongoDB test containers
 
-### Priority 4: Swagger Documentation (Target 16)
-**Impact: SRS explicitly requires Swagger**
-1. Add `@Tag` to all controllers (5 controllers across 4 services)
-2. Add `@Operation` and `@ApiResponse` to all endpoint methods
-3. Add `@Schema` to all DTOs for field descriptions
-4. Verify Swagger UI loads at `http://localhost:{port}/swagger-ui.html` for each service
-
-### Priority 5: JaCoCo + SonarQube Setup (Target 19)
+### Priority 4: JaCoCo + SonarQube Setup (Target 19)
 **Impact: Code quality metrics required by SRS**
 1. Add `jacoco-maven-plugin` to parent pom.xml
 2. Configure `sonar-maven-plugin` with SonarQube connection
 3. Run analysis, verify metrics meet: Security A, Reliability A, Issues <=5, Coverage >=80%, Duplications <=3%
 
-### Priority 6: Load Balancing Verification (Target 17)
+### Priority 5: Load Balancing Verification (Target 17)
 **Impact: SRS requires two instances + load balancing**
 1. Run `post-service` on ports 8082 and 8092
 2. Both register with Consul as `post-service`
 3. Verify gateway distributes requests between instances
 
-### Priority 7: File Upload Endpoint
+### Priority 6: File Upload Endpoint
 **Impact: US03 media upload**
 1. Implement `POST /api/posts/upload` accepting `MultipartFile`
 2. Store locally or in cloud storage
 3. Return media URL for use in `CreatePostRequestDTO.mediaUrls`
 
-### Priority 8 (Stretch): Comment Functionality
+### Priority 7 (Stretch): Comment Functionality
 **Impact: US03, US04, US07 all mention comments**
 1. Create `Comment` entity with `postId`, `userId`, `text`, `createdAt`
 2. Add `CommentRepository`, `CommentService`, comment endpoints in post-service
@@ -496,29 +591,43 @@ Listed in priority order based on SRS requirements and current gaps:
 
 ---
 
-## Changes Since Previous Report
+## Section 10: Changes Since Previous Report
 
 | Item | Previous Status | Current Status | Evidence |
 |------|----------------|----------------|----------|
-| API Gateway JWT Filter | NOT IMPLEMENTED (Critical gap #1) | DONE | `JwtAuthenticationFilter.java` -- validates JWT, extracts userId/username, forwards headers |
-| API Gateway CORS | NOT IMPLEMENTED (Critical gap #2) | DONE | `CorsConfig.java` -- allows localhost:3000 and localhost:4200 |
-| API Gateway JWT Util | NOT IMPLEMENTED | DONE | `gateway/util/JwtUtil.java` with same secret key as auth-service |
-| Trending Service | SKELETON ONLY | FULLY IMPLEMENTED | `TrendingPost`, `TrendingHashtag` entities; `TrendingService` with scoring + `@Scheduled`; `TrendingController` with 4 endpoints |
-| Trending LoggingAspect | MISSING | DONE | `trending-service/.../aspect/LoggingAspect.java` |
-| Trending GlobalExceptionHandler | MISSING | DONE | `trending-service/.../exception/GlobalExceptionHandler.java` |
-| Post Service Tests | NOT STARTED | DONE | `PostServiceTest.java` with 12 test methods covering CRUD + like/unlike |
-| Follow Service Tests | NOT STARTED | DONE | `FollowServiceTest.java` with 10 test methods covering follow/unfollow/stats |
-| Gateway JWT Dependencies | NOT PRESENT | DONE | `jjwt-api`, `jjwt-impl`, `jjwt-jackson` in `api-gateway/pom.xml` |
+| Search - User search | NOT IMPLEMENTED | DONE | `GET /api/auth/search/users?q=` with MongoDB `$regex` on username/fullName/bio in `UserRepository.searchUsers()` |
+| Search - Post search | NOT IMPLEMENTED | DONE | `GET /api/posts/search?q=&sort=` with MongoDB `$regex` on caption/hashtags; sort by popular/recent/relevance in `PostService.searchPosts()` |
+| Search - Sort options | NOT IMPLEMENTED | DONE | `sort=popular` (likesCount desc), `sort=recent` (createdAt desc), default=relevance (regex match) |
+| Trending Unit Tests | NOT STARTED | DONE | `TrendingServiceTest.java` with 8 tests: getTrendingPosts (3 tests), getTrendingHashtags (1), addPost (2), removePost (2) |
+| Swagger - @Tag | NOT PRESENT | DONE (all 4 controllers) | `@Tag` on AuthController, PostController, FollowController, TrendingController |
+| Swagger - @Operation | NOT PRESENT | PARTIALLY DONE (17/26) | AuthController 8/8, PostController 6/8, FollowController 3/6, TrendingController 0/4 |
+| Swagger - @ApiResponses | NOT PRESENT | PARTIALLY DONE (17/26) | Same distribution as @Operation above |
+| Swagger - OpenApiConfig | NOT PRESENT | DONE (all 4 services) | Programmatic OpenAPI info with title, description, version, contact |
+| Swagger - @Schema on DTOs | NOT PRESENT | NOT DONE | Still zero @Schema annotations |
+| US05 criterion 1 (search users) | NOT DONE | DONE | Search users now implemented via `GET /api/auth/search/users` |
+| US06 (entire story) | 0/7 DONE | 5/7 DONE | User search + post/hashtag search + sort options + view details all implemented |
+| PostRepository custom queries | Basic CRUD only | NEW methods added | `searchPosts()`, `findByHashtagsContainingOrderByLikesCountDesc()`, `findByHashtagsContainingOrderByCreatedAtDesc()`, `findByUserIdIn()` |
+| UserRepository custom query | Basic finders only | NEW method added | `searchUsers()` with $or regex on username, fullName, bio |
 
 **Previous critical gaps resolved:**
-1. ~~No JWT authentication filter in API Gateway~~ -- RESOLVED
-2. ~~No CORS configuration~~ -- RESOLVED
-3. ~~Trending service is only a skeleton~~ -- RESOLVED
-4. ~~No tests for post-service~~ -- RESOLVED
-5. ~~No tests for follow-service~~ -- RESOLVED
-6. ~~Trending service has no LoggingAspect~~ -- RESOLVED
+1. ~~Search functionality not implemented (US06)~~ -- RESOLVED (basic search done, 5/7 criteria met)
+2. ~~Trending service unit tests missing~~ -- RESOLVED (8 tests covering core methods)
+3. ~~Swagger annotations missing~~ -- PARTIALLY RESOLVED (17/26 endpoints annotated, DTOs still need @Schema)
 
 **Remaining critical gaps (top 3):**
 1. No inter-service communication (services completely isolated)
-2. Search functionality not implemented (entire US06)
-3. Swagger annotations missing
+2. Swagger still incomplete (9 endpoints + all DTOs missing annotations)
+3. No JaCoCo/SonarQube (cannot verify 80% coverage requirement)
+
+---
+
+## Section 11: Source File Counts
+
+| Service | Main Java Files | Test Java Files | Total |
+|---------|----------------|-----------------|-------|
+| auth-service | 36 | 9 | 45 |
+| post-service | 17 | 1 | 18 |
+| follow-service | 14 | 1 | 15 |
+| trending-service | 13 | 1 | 14 |
+| api-gateway | 4 | 0 | 4 |
+| **TOTAL** | **90** (up from 86) | **12** (up from 11) | **102** |
