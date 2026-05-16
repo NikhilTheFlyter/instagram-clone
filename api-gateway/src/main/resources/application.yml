@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        service-name: api-gateway
+        health-check-interval: 10s
+    gateway:
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+        - id: post-service
+          uri: lb://post-service
+          predicates:
+            - Path=/api/posts/**
+        - id: follow-service
+          uri: lb://follow-service
+          predicates:
+            - Path=/api/follow/**
+        - id: trending-service
+          uri: lb://trending-service
+          predicates:
+            - Path=/api/trending/**
+
+logging:
+  level:
+    com.instagram.gateway: DEBUG
+    org.springframework.cloud.gateway: DEBUG

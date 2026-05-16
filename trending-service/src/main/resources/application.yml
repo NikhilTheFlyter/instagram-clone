@@ -1,0 +1,22 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: trending-service
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/instagram_trending
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        service-name: trending-service
+        health-check-interval: 10s
+
+logging:
+  level:
+    com.instagram.trending: DEBUG
+    org.springframework.data.mongodb: DEBUG
