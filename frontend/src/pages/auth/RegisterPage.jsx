@@ -62,6 +62,7 @@ export default function RegisterPage() {
         email: data.email,
         username: data.username,
         password: data.password,
+        confirmPassword: data.confirmPassword,
       });
       toast.success('Account created! Please log in.');
       navigate('/login');
