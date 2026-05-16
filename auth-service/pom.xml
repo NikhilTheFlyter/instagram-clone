@@ -77,6 +77,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Spring Cloud LoadBalancer (for @LoadBalanced RestTemplate) -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+
         <!-- Resilience4j -->
         <dependency>
             <groupId>io.github.resilience4j</groupId>

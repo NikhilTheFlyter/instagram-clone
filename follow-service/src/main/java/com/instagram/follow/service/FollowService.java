@@ -93,4 +93,11 @@ public class FollowService {
     public boolean isFollowing(String followerId, String followingId) {
         return followRepository.existsByFollowerIdAndFollowingId(followerId, followingId);
     }
+
+    public List<String> getFollowingIds(String userId) {
+        List<Follow> following = followRepository.findByFollowerId(userId);
+        return following.stream()
+                .map(Follow::getFollowingId)
+                .collect(Collectors.toList());
+    }
 }

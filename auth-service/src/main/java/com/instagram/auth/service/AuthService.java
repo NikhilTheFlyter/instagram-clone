@@ -1,5 +1,7 @@
 package com.instagram.auth.service;
 
+import com.instagram.auth.client.FollowServiceClient;
+import com.instagram.auth.client.PostServiceClient;
 import com.instagram.auth.dto.*;
 import com.instagram.auth.entity.User;
 import com.instagram.auth.exception.*;
@@ -29,6 +31,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
     private final JwtUtil jwtUtil;
+    private final PostServiceClient postServiceClient;
+    private final FollowServiceClient followServiceClient;
 
     public UserResponseDTO register(RegisterRequestDTO request) {
         log.info("Registering user with username: {}", request.getUsername());
@@ -92,6 +96,13 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
+        // Fetch real counts from post-service and follow-service
+        long postCount = postServiceClient.getPostCount(userId);
+
+        Map<String, Object> followStats = followServiceClient.getFollowStats(userId);
+        long followerCount = ((Number) followStats.getOrDefault("followerCount", 0)).longValue();
+        long followingCount = ((Number) followStats.getOrDefault("followingCount", 0)).longValue();
+
         return UserProfileResponseDTO.builder()
                 .id(user.getId())
                 .fullName(user.getFullName())
@@ -100,9 +111,9 @@ public class AuthService {
                 .bio(user.getBio())
                 .profilePicture(user.getProfilePicture())
                 .createdAt(user.getCreatedAt())
-                .postCount(0)
-                .followerCount(0)
-                .followingCount(0)
+                .postCount(postCount)
+                .followerCount(followerCount)
+                .followingCount(followingCount)
                 .build();
     }
 
@@ -125,6 +136,13 @@ public class AuthService {
         User updatedUser = userRepository.save(user);
         log.info("Profile updated successfully for user id: {}", userId);
 
+        // Fetch real counts from post-service and follow-service
+        long postCount = postServiceClient.getPostCount(userId);
+
+        Map<String, Object> followStats = followServiceClient.getFollowStats(userId);
+        long followerCount = ((Number) followStats.getOrDefault("followerCount", 0)).longValue();
+        long followingCount = ((Number) followStats.getOrDefault("followingCount", 0)).longValue();
+
         return UserProfileResponseDTO.builder()
                 .id(updatedUser.getId())
                 .fullName(updatedUser.getFullName())
@@ -133,9 +151,9 @@ public class AuthService {
                 .bio(updatedUser.getBio())
                 .profilePicture(updatedUser.getProfilePicture())
                 .createdAt(updatedUser.getCreatedAt())
-                .postCount(0)
-                .followerCount(0)
-                .followingCount(0)
+                .postCount(postCount)
+                .followerCount(followerCount)
+                .followingCount(followingCount)
                 .build();
     }
 

@@ -35,6 +35,20 @@ resilience4j:
         waitDurationInOpenState: 60000
         permittedNumberOfCallsInHalfOpenState: 1
         automaticTransitionFromOpenToHalfOpenEnabled: true
+      postService:
+        registerHealthIndicator: true
+        slidingWindowSize: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30000
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+      followService:
+        registerHealthIndicator: true
+        slidingWindowSize: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30000
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
 
 # Logging
 logging:

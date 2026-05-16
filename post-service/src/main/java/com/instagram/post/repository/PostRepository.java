@@ -24,4 +24,6 @@ public interface PostRepository extends MongoRepository<Post, String> {
     Page<Post> findByHashtagsContainingOrderByLikesCountDesc(String hashtag, Pageable pageable);
 
     Page<Post> findByHashtagsContainingOrderByCreatedAtDesc(String hashtag, Pageable pageable);
+
+    long countByUserId(String userId);
 }

@@ -1,5 +1,6 @@
 package com.instagram.post.service;
 
+import com.instagram.post.client.FollowServiceClient;
 import com.instagram.post.dto.CreatePostRequestDTO;
 import com.instagram.post.dto.LikeResponseDTO;
 import com.instagram.post.dto.PostResponseDTO;
@@ -14,10 +15,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +33,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final LikeRepository likeRepository;
     private final ModelMapper modelMapper;
+    private final FollowServiceClient followServiceClient;
 
     public PostResponseDTO createPost(String userId, CreatePostRequestDTO dto) {
         Post post = Post.builder()
@@ -150,6 +157,29 @@ public class PostService {
         }
 
         return posts.map(post -> modelMapper.map(post, PostResponseDTO.class));
+    }
+
+    public long getPostCount(String userId) {
+        return postRepository.countByUserId(userId);
+    }
+
+    public Page<PostResponseDTO> getFeedPosts(String userId, int page, int size) {
+        log.info("Fetching feed posts for user: {}", userId);
+
+        List<String> followingIds = followServiceClient.getFollowingIds(userId);
+
+        if (followingIds.isEmpty()) {
+            log.info("User {} follows no one, returning empty feed", userId);
+            return new PageImpl<>(Collections.emptyList(), PageRequest.of(page, size), 0);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Post> posts = postRepository.findByUserIdIn(followingIds, pageable);
+
+        return posts.map(post -> {
+            boolean liked = likeRepository.existsByPostIdAndUserId(post.getId(), userId);
+            return mapToPostResponseDTO(post, liked);
+        });
     }
 
     private PostResponseDTO mapToPostResponseDTO(Post post, boolean liked) {
