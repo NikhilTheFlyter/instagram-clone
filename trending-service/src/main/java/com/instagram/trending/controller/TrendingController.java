@@ -3,6 +3,10 @@ package com.instagram.trending.controller;
 import com.instagram.trending.dto.TrendingHashtagDTO;
 import com.instagram.trending.dto.TrendingPostDTO;
 import com.instagram.trending.service.TrendingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,10 +27,15 @@ import java.util.List;
 @RequestMapping("/api/trending")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Trending", description = "Trending posts and hashtags")
 public class TrendingController {
 
     private final TrendingService trendingService;
 
+    @Operation(summary = "Get trending posts", description = "Retrieves trending posts with filtering and pagination")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Trending posts retrieved successfully")
+    })
     @GetMapping("/posts")
     public ResponseEntity<Page<TrendingPostDTO>> getTrendingPosts(
             @RequestParam(defaultValue = "popular") String filter,
@@ -37,6 +46,10 @@ public class TrendingController {
         return ResponseEntity.ok(posts);
     }
 
+    @Operation(summary = "Get trending hashtags", description = "Retrieves the top trending hashtags")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Trending hashtags retrieved successfully")
+    })
     @GetMapping("/hashtags")
     public ResponseEntity<List<TrendingHashtagDTO>> getTrendingHashtags(
             @RequestParam(defaultValue = "10") int limit) {
@@ -45,6 +58,10 @@ public class TrendingController {
         return ResponseEntity.ok(hashtags);
     }
 
+    @Operation(summary = "Add a trending post", description = "Adds a post to the trending posts collection")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Post added to trending successfully")
+    })
     @PostMapping("/posts")
     public ResponseEntity<TrendingPostDTO> addPost(@RequestBody TrendingPostDTO dto) {
         log.info("POST /api/trending/posts - postId: {}", dto.getPostId());
@@ -52,6 +69,10 @@ public class TrendingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    @Operation(summary = "Remove a trending post", description = "Removes a post from the trending posts collection")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Post removed from trending successfully")
+    })
     @DeleteMapping("/posts/{postId}")
     public ResponseEntity<Void> removePost(@PathVariable String postId) {
         log.info("DELETE /api/trending/posts/{}", postId);

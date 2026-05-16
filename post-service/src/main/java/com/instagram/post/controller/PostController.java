@@ -91,6 +91,11 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Unlike a post", description = "Removes a like from the specified post by the authenticated user")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Post unliked successfully"),
+        @ApiResponse(responseCode = "404", description = "Like not found")
+    })
     @DeleteMapping("/{postId}/like")
     public ResponseEntity<LikeResponseDTO> unlikePost(
             @PathVariable String postId,
@@ -99,6 +104,10 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Get like status", description = "Retrieves the like count and whether the authenticated user has liked the post")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Like status retrieved successfully")
+    })
     @GetMapping("/{postId}/likes")
     public ResponseEntity<LikeResponseDTO> getLikeStatus(
             @PathVariable String postId,
@@ -107,6 +116,10 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Search posts", description = "Search posts by caption or hashtag with sorting and pagination")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Search results returned successfully")
+    })
     @GetMapping("/search")
     public ResponseEntity<Page<PostResponseDTO>> searchPosts(
             @RequestParam String q,
@@ -116,5 +129,27 @@ public class PostController {
         log.info("Search posts request: q={}, sort={}", q, sort);
         Page<PostResponseDTO> results = postService.searchPosts(q, sort, page, size);
         return ResponseEntity.ok(results);
+    }
+
+    @Operation(summary = "Get post count for user", description = "Returns the total number of posts by a user")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Post count retrieved successfully")
+    })
+    @GetMapping("/user/{userId}/count")
+    public ResponseEntity<Long> getPostCount(@PathVariable String userId) {
+        return ResponseEntity.ok(postService.getPostCount(userId));
+    }
+
+    @Operation(summary = "Get feed posts", description = "Returns posts from users the authenticated user follows, sorted by most recent")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Feed posts retrieved successfully")
+    })
+    @GetMapping("/feed")
+    public ResponseEntity<Page<PostResponseDTO>> getFeedPosts(
+            @RequestHeader("X-User-Id") String userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<PostResponseDTO> response = postService.getFeedPosts(userId, page, size);
+        return ResponseEntity.ok(response);
     }
 }
