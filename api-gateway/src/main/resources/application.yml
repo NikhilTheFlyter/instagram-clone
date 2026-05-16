@@ -30,6 +30,9 @@ spring:
           predicates:
             - Path=/api/trending/**
 
+jwt:
+  secret: instagram-clone-super-secret-key-that-is-at-least-256-bits-long
+
 logging:
   level:
     com.instagram.gateway: DEBUG
