@@ -58,10 +58,11 @@ A full-stack Instagram clone built with **microservice architecture** using Spri
 
 ## Prerequisites
 
-- **macOS** (tested on macOS Sequoia)
-- **Homebrew** — https://brew.sh
+You need: **Java 17**, **Maven**, **MongoDB**, **Consul**, **Node.js**
 
-### Install dependencies
+---
+
+### macOS Setup (Homebrew)
 
 ```bash
 # Java 17
@@ -76,16 +77,176 @@ brew install maven
 # Consul
 brew install consul
 
-# MongoDB (if not already installed)
+# MongoDB
 brew tap mongodb/brew
 brew install mongodb-community
 brew services start mongodb-community
 
-# Node.js (for frontend)
+# Node.js
 brew install node
 ```
 
-### Verify installations
+---
+
+### Windows Setup
+
+#### 1. Java 17
+
+- Download **OpenJDK 17** from https://adoptium.net/temurin/releases/?version=17 (pick Windows x64 `.msi` installer)
+- Run the installer — check **"Set JAVA_HOME variable"** and **"Add to PATH"** during install
+- Verify in a new Command Prompt / PowerShell:
+  ```powershell
+  java --version    # Should show 17.x
+  ```
+
+#### 2. Maven
+
+- Download from https://maven.apache.org/download.cgi (Binary zip archive)
+- Extract to `C:\Program Files\Maven`
+- Add to system PATH:
+  ```
+  System Properties → Environment Variables → Path → Edit → Add:
+  C:\Program Files\Maven\apache-maven-3.9.x\bin
+  ```
+- Or use **Chocolatey**:
+  ```powershell
+  choco install maven
+  ```
+- Verify:
+  ```powershell
+  mvn --version    # Should show Java 17
+  ```
+
+#### 3. MongoDB
+
+- Download **MongoDB Community Server** from https://www.mongodb.com/try/download/community (Windows x64 `.msi`)
+- Run installer — choose **"Complete"** install, check **"Install MongoDB as a Service"**
+- MongoDB Shell (mongosh): https://www.mongodb.com/try/download/shell
+- Verify:
+  ```powershell
+  mongosh --eval "db.runCommand({ping:1})"
+  ```
+
+#### 4. Consul
+
+- Download from https://developer.hashicorp.com/consul/install (Windows AMD64 `.zip`)
+- Extract `consul.exe` to `C:\Program Files\Consul`
+- Add to PATH:
+  ```
+  System Properties → Environment Variables → Path → Edit → Add:
+  C:\Program Files\Consul
+  ```
+- Or use **Chocolatey**:
+  ```powershell
+  choco install consul
+  ```
+- Verify:
+  ```powershell
+  consul --version
+  ```
+
+#### 5. Node.js
+
+- Download from https://nodejs.org (LTS version, Windows Installer)
+- Run installer (includes npm)
+- Verify:
+  ```powershell
+  node --version
+  npm --version
+  ```
+
+#### Windows Quick Start
+
+```powershell
+# Terminal 1 — Consul
+consul agent -dev
+
+# Terminal 2 — Auth Service
+cd auth-service
+mvn spring-boot:run -D"maven.test.skip=true"
+
+# Terminal 3 — Post Service
+cd post-service
+mvn spring-boot:run -D"maven.test.skip=true"
+
+# Terminal 4 — Follow Service
+cd follow-service
+mvn spring-boot:run -D"maven.test.skip=true"
+
+# Terminal 5 — Trending Service
+cd trending-service
+mvn spring-boot:run -D"maven.test.skip=true"
+
+# Terminal 6 — API Gateway
+cd api-gateway
+mvn spring-boot:run -D"maven.test.skip=true"
+
+# Terminal 7 — Frontend
+cd frontend
+npm install
+npm run dev
+```
+
+> **Note for Windows**: Use `mvn spring-boot:run -D"maven.test.skip=true"` (with quotes around the property) in PowerShell. In Command Prompt, use `mvn spring-boot:run -Dmaven.test.skip=true` without quotes.
+
+#### Windows One-Liner (PowerShell)
+
+```powershell
+# Start all services in background
+Start-Process -NoNewWindow consul -ArgumentList "agent","-dev"
+Start-Process -NoNewWindow -WorkingDirectory "auth-service" mvn -ArgumentList "spring-boot:run","-Dmaven.test.skip=true"
+Start-Process -NoNewWindow -WorkingDirectory "post-service" mvn -ArgumentList "spring-boot:run","-Dmaven.test.skip=true"
+Start-Process -NoNewWindow -WorkingDirectory "follow-service" mvn -ArgumentList "spring-boot:run","-Dmaven.test.skip=true"
+Start-Process -NoNewWindow -WorkingDirectory "trending-service" mvn -ArgumentList "spring-boot:run","-Dmaven.test.skip=true"
+Start-Process -NoNewWindow -WorkingDirectory "api-gateway" mvn -ArgumentList "spring-boot:run","-Dmaven.test.skip=true"
+
+# Wait for boot
+Start-Sleep -Seconds 30
+
+# Start frontend
+cd frontend
+npm install
+npm run dev
+```
+
+**Stop all services (PowerShell):**
+```powershell
+Get-Process -Name java -ErrorAction SilentlyContinue | Stop-Process
+Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process
+Get-Process -Name consul -ErrorAction SilentlyContinue | Stop-Process
+```
+
+---
+
+### Linux Setup (Ubuntu/Debian)
+
+```bash
+# Java 17
+sudo apt update
+sudo apt install openjdk-17-jdk
+echo 'export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64' >> ~/.bashrc
+source ~/.bashrc
+
+# Maven
+sudo apt install maven
+
+# Consul
+wget https://releases.hashicorp.com/consul/1.22.7/consul_1.22.7_linux_amd64.zip
+unzip consul_1.22.7_linux_amd64.zip
+sudo mv consul /usr/local/bin/
+
+# MongoDB
+# Follow: https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/
+sudo systemctl start mongod
+
+# Node.js
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install nodejs
+```
+
+---
+
+### Verify installations (all platforms)
 
 ```bash
 java --version    # 17.x
